@@ -76,4 +76,5 @@ if __name__ == '__main__':
     parser.add_argument('--source', default="data/rams/dev.jsonlines")
     parser.add_argument('--target', default="data/parsed/dev.json")
     args = parser.parse_args()
+    print("Converting {" + args.source + "} to {" + args.target + "}")
     transform_from_file_to_file(args.source, args.target)
