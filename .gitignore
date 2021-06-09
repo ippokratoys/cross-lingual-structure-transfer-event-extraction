@@ -128,5 +128,11 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-#editor
+# editor
 .idea/
+
+# Application specific
+# bin models
+cc.en.300.bin
+cc.en.300.bin.gz
+./data/parsed/
