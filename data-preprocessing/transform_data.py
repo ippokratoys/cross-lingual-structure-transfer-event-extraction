@@ -17,9 +17,11 @@ file will have the following format
 """
 import argparse
 import json
+import uuid
 from pathlib import Path
 
 import fasttext.util
+import stanza
 from corpy.udpipe import Model
 from tqdm import tqdm
 
@@ -27,12 +29,15 @@ from tqdm import tqdm
 def init_models():
     global m
     global ft
+    global stanza_nlp
     # see {http://lindat.mff.cuni.cz/services/udpipe/} for different language models
     # see {https://universaldependencies.org/format.html}
     m = Model("./data/english-ewt-ud-2.5-191206.udpipe")
     fasttext.util.download_model('en', if_exists='ignore')  # English
     # see {https://fasttext.cc/docs/en/crawl-vectors.html} for multilingual word embeddings
-    ft = fasttext.load_model('cc.en.300.bin')
+    # ft = fasttext.load_model('cc.en.300.bin')
+    stanza.download("en")
+    stanza_nlp = stanza.Pipeline('en', processors='tokenize,ner')
 
 
 def map_word_to_token(word):
@@ -48,7 +53,7 @@ def map_word_to_token(word):
     token['id'] = word.id
     token['dependency_relation'] = word.deprel
     token['head'] = word.head
-    token['word_embeddings'] = ft.get_word_vector(word.form).tolist()
+    # token['word_embeddings'] = ft.get_word_vector(word.form).tolist()
     return token
 
 
@@ -94,14 +99,48 @@ def convert_line_to_target(line):
         sentence_end_index = sentence_start_index + len(sentence_tokes)
 
         entry = dict()
+        entry['id'] = str(uuid.uuid4())
         entry['sentence'] = " ".join(sentence_tokes)
-        entry['tokens'] = map_tokens(entry['sentence'])
+        tokens_with_data = map_tokens(entry['sentence'])
+        entry['token_ud'] = list(map(lambda x: x['text'], tokens_with_data))
+        parsed = stanza_nlp.process(entry['sentence'])
+
+        entry['token'] = []
+        entry['stanford_ner'] = []
+        entry['stanford_pos'] = list(map(lambda x: x['part_of_speech'], tokens_with_data))
+        entry['stanford_head'] = list(map(lambda x: x['head'], tokens_with_data))
+        entry['stanford_deprel'] = list(map(lambda x: x['dependency_relation'], tokens_with_data))
+        for index, token in enumerate(parsed.sentences[0].tokens):
+            entry['token'].append(token.text)
+            entry['stanford_ner'].append(token.ner)
+
+        if len(entry['token_ud']) != len(entry['token']):
+            print("Missmatch...")
+            print(entry['token_ud'])
+            print(entry['token'])
+            continue
+
+        for i, pos in enumerate(entry['stanford_pos']):
+            if pos == 'VERB':
+                entry['obj_start'] = i
+                entry['obj_end'] = i
+                # todo
+                entry['obj_type'] = ''
+                break
+
+        for i, pos in enumerate(entry['stanford_deprel']):
+            if pos == 'nsubj':
+                entry['subj_start'] = i
+                entry['subj_end'] = i
+                # todo
+                entry['subj_type'] = ''
+                break
 
         sentence_event = get_event(events, sentence_start_index, sentence_end_index)
         if sentence_event is None:
-            entry['event'] = 'NONE'
+            entry['relation'] = 'NONE'
         else:
-            entry['event'] = sentence_event
+            entry['relation'] = sentence_event
 
         sentence_start_index = sentence_end_index
         sentences_converted.append(entry)
@@ -110,7 +149,7 @@ def convert_line_to_target(line):
 
 
 def transform_from_file_to_file(source_file_path, target_file_path):
-    num_lines = sum(1 for line in open(source_file_path, 'r'))
+    num_lines = sum(1 for _ in open(source_file_path, 'r'))
     with open(source_file_path, "r") as read_file:
         sentences = []
         for line in tqdm(read_file, total=num_lines):
