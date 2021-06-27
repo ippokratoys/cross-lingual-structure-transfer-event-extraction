@@ -121,20 +121,33 @@ def convert_line_to_target(line):
             continue
 
         for i, pos in enumerate(entry['stanford_pos']):
-            if pos == 'VERB':
+            # TODO: here probably we need extra info to define which verb to keep and not just the first one
+            if pos == 'VERB' and 'obj_start' not in entry.keys():
                 entry['obj_start'] = i
-                entry['obj_end'] = i
-                # todo
-                entry['obj_type'] = ''
-                break
+                entry['obj_type'] = 'VERB' #TBD
+            elif 'obj_start' in entry.keys():
+                if pos == 'VERB':
+                    continue
+                else:
+                    entry['obj_end'] = i - 1
+                    break
+            else:
+                continue
 
         for i, pos in enumerate(entry['stanford_deprel']):
-            if pos == 'nsubj':
+            # TODO: here probably we need the subj of the verb we chose above
+            if pos == 'nsubj' and 'subj_start' not in entry.keys():
                 entry['subj_start'] = i
-                entry['subj_end'] = i
-                # todo
-                entry['subj_type'] = ''
-                break
+                ners_for_entry = list(enumerate(entry['stanford_ner']))
+                entry['subj_type'] = ners_for_entry[i][1]
+            elif 'obj_start' in entry.keys():
+                if pos == 'nsubj':
+                    continue
+                else:
+                    entry['subj_end'] = i - 1
+                    break
+            else:
+                continue
 
         sentence_event = get_event(events, sentence_start_index, sentence_end_index)
         if sentence_event is None:
