@@ -128,15 +128,13 @@ def convert_line_to_target(line):
             # TODO: here probably we need extra info to define which verb to keep and not just the first one
             if pos == 'VERB' and 'obj_start' not in entry.keys():
                 entry['obj_start'] = i
-                entry['obj_type'] = 'VERB' #TBD
+                entry['obj_type'] = 'VERB'  # TBD
             elif 'obj_start' in entry.keys():
-            if pos == 'VERB':
+                if pos == 'VERB':
                     continue
                 else:
                     entry['obj_end'] = i - 1
-                break
-            else:
-                continue
+                    break
 
         entry['subj_start'] = 0
         entry['subj_end'] = 0
@@ -164,7 +162,6 @@ def convert_line_to_target(line):
 
         sentence_start_index = sentence_end_index
         sentences_converted.append(entry)
-
     return sentences_converted
 
 
