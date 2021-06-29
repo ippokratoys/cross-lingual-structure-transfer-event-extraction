@@ -138,3 +138,4 @@ cc.en.300.bin.gz
 ./data/parsed/
 dataset/vocab/*
 dataset/glove/*
+saved_models/*
