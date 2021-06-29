@@ -128,6 +128,7 @@ def convert_line_to_target(line):
             # TODO: here probably we need extra info to define which verb to keep and not just the first one
             if pos == 'VERB' and 'obj_start' not in entry.keys():
                 entry['obj_start'] = i
+                entry['obj_end'] = i
                 entry['obj_type'] = 'VERB'  # TBD
             elif 'obj_start' in entry.keys():
                 if pos == 'VERB':
@@ -143,6 +144,7 @@ def convert_line_to_target(line):
             # TODO: here probably we need the subj of the verb we chose above
             if pos == 'nsubj' and 'subj_start' not in entry.keys():
                 entry['subj_start'] = i
+                entry['subj_end'] = i
                 ners_for_entry = list(enumerate(entry['stanford_ner']))
                 entry['subj_type'] = ners_for_entry[i][1]
             elif 'obj_start' in entry.keys():
