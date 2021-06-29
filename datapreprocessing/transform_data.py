@@ -103,6 +103,7 @@ def convert_line_to_target(line):
         entry['sentence'] = " ".join(sentence_tokes)
         tokens_with_data = map_tokens(entry['sentence'])
         entry['token_ud'] = list(map(lambda x: x['text'], tokens_with_data))
+        # todo check if we can skip tokenization
         parsed = stanza_nlp.process(entry['sentence'])
 
         entry['token'] = []
@@ -120,20 +121,26 @@ def convert_line_to_target(line):
             print(entry['token'])
             continue
 
+        entry['obj_start'] = 0
+        entry['obj_end'] = 0
+        entry['obj_type'] = '<UNK>'
         for i, pos in enumerate(entry['stanford_pos']):
             # TODO: here probably we need extra info to define which verb to keep and not just the first one
             if pos == 'VERB' and 'obj_start' not in entry.keys():
                 entry['obj_start'] = i
                 entry['obj_type'] = 'VERB' #TBD
             elif 'obj_start' in entry.keys():
-                if pos == 'VERB':
+            if pos == 'VERB':
                     continue
                 else:
                     entry['obj_end'] = i - 1
-                    break
+                break
             else:
                 continue
 
+        entry['subj_start'] = 0
+        entry['subj_end'] = 0
+        entry['subj_type'] = '<UNK>'
         for i, pos in enumerate(entry['stanford_deprel']):
             # TODO: here probably we need the subj of the verb we chose above
             if pos == 'nsubj' and 'subj_start' not in entry.keys():
@@ -145,13 +152,13 @@ def convert_line_to_target(line):
                     continue
                 else:
                     entry['subj_end'] = i - 1
-                    break
+                break
             else:
                 continue
 
         sentence_event = get_event(events, sentence_start_index, sentence_end_index)
         if sentence_event is None:
-            entry['relation'] = 'NONE'
+            entry['relation'] = 'no_relation'
         else:
             entry['relation'] = sentence_event
 
@@ -165,14 +172,48 @@ def transform_from_file_to_file(source_file_path, target_file_path):
     num_lines = sum(1 for _ in open(source_file_path, 'r'))
     with open(source_file_path, "r") as read_file:
         sentences = []
+        i = 0
         for line in tqdm(read_file, total=num_lines):
+            i += 1
             sentences.extend(convert_line_to_target(line))
+            if i == 10:
+                break
 
         path = Path(target_file_path)
         path.parent.mkdir(parents=True, exist_ok=True)
         print("Writing to file")
         with open(target_file_path, "w") as write_file:
             json.dump(sentences, write_file, separators=(',', ':'))
+
+
+def convert_to_sentences_of_tokens(text):
+    parsed = list(m.process(text))
+    sentences = []
+    for sentence_parsed in parsed:
+        sentence = []
+        for word in sentence_parsed.words[1:]:
+            sentence.append(word.form)
+        sentences.append(sentence)
+    return sentences
+
+
+def parse_single(text, target_file_path):
+    init_models()
+    sentences_of_tokens = convert_to_sentences_of_tokens(text)
+    line = """
+    {{
+      "sentences": {},
+      "evt_triggers": [] 
+    }}
+    """.format(json.dumps(sentences_of_tokens))
+    print(line)
+    sentences = convert_line_to_target(line)
+
+    path = Path(target_file_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    print("Writing to file")
+    with open(target_file_path, "w") as write_file:
+        json.dump(sentences, write_file, separators=(',', ':'))
 
 
 if __name__ == '__main__':
