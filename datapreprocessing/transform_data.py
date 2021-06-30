@@ -25,19 +25,42 @@ import stanza
 from corpy.udpipe import Model
 from tqdm import tqdm
 
+LANG_SPECIFIC_OPTIONS = {
+    "en": {
+        "model_ud_pipe": "./data/english-ewt-ud-2.5-191206.udpipe",
+        "fasttext_lang": "en",
+        "fasttext_model": "cc.en.300.bin",
+        "stanza_download": "en",
+        "stanza_pipeline": "en",
+    },
+    "fr": {
+        "model_ud_pipe": "./data/french-gsd-ud-2.5-191206.udpipe",
+        "fasttext_lang": "fr",
+        "fasttext_model": "cc.fr.300.bin",
+        "stanza_download": "fr",
+        "stanza_pipeline": "fr"
+    }
+}
 
-def init_models():
+
+def init_models(lang="en"):
     global m
     global ft
     global stanza_nlp
+
+    if lang not in LANG_SPECIFIC_OPTIONS.keys():
+        print("Can't handle lang", lang)
+        exit(42)
+    options = LANG_SPECIFIC_OPTIONS[lang]
+
     # see {http://lindat.mff.cuni.cz/services/udpipe/} for different language models
     # see {https://universaldependencies.org/format.html}
-    m = Model("./data/english-ewt-ud-2.5-191206.udpipe")
-    fasttext.util.download_model('en', if_exists='ignore')  # English
+    m = Model(options["model_ud_pipe"])
+    fasttext.util.download_model(options["fasttext_lang"], if_exists='ignore')  # English
     # see {https://fasttext.cc/docs/en/crawl-vectors.html} for multilingual word embeddings
-    # ft = fasttext.load_model('cc.en.300.bin')
-    stanza.download("en")
-    stanza_nlp = stanza.Pipeline('en', processors='tokenize,ner')
+    # ft = fasttext.load_model(options["fasttext_model"])
+    stanza.download(options["stanza_download"])
+    stanza_nlp = stanza.Pipeline(options["stanza_pipeline"], processors='tokenize,ner')
 
 
 def map_word_to_token(word):
@@ -116,9 +139,8 @@ def convert_line_to_target(line):
             entry['stanford_ner'].append(token.ner)
 
         if len(entry['token_ud']) != len(entry['token']):
-            print("Missmatch...")
-            print(entry['token_ud'])
-            print(entry['token'])
+            global skipped_sentences
+            skipped_sentences += 1
             continue
 
         entry['obj_start'] = 0
@@ -171,12 +193,8 @@ def transform_from_file_to_file(source_file_path, target_file_path):
     num_lines = sum(1 for _ in open(source_file_path, 'r'))
     with open(source_file_path, "r") as read_file:
         sentences = []
-        i = 0
         for line in tqdm(read_file, total=num_lines):
-            i += 1
             sentences.extend(convert_line_to_target(line))
-            if i == 10:
-                break
 
         path = Path(target_file_path)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -196,8 +214,8 @@ def convert_to_sentences_of_tokens(text):
     return sentences
 
 
-def parse_single(text, target_file_path):
-    init_models()
+def parse_single(text, target_file_path, lang):
+    init_models(lang)
     sentences_of_tokens = convert_to_sentences_of_tokens(text)
     line = """
     {{
@@ -205,7 +223,6 @@ def parse_single(text, target_file_path):
       "evt_triggers": [] 
     }}
     """.format(json.dumps(sentences_of_tokens))
-    print(line)
     sentences = convert_line_to_target(line)
 
     path = Path(target_file_path)
@@ -216,12 +233,16 @@ def parse_single(text, target_file_path):
 
 
 if __name__ == '__main__':
+    global skipped_sentences
+    skipped_sentences = 0
     parser = argparse.ArgumentParser()
     parser.add_argument('--source', default="data/rams/dev.jsonlines")
     parser.add_argument('--target', default="data/parsed/dev.json")
+    parser.add_argument('--lang', default="en")
     args = parser.parse_args()
     print("Converting {" + args.source + "} to {" + args.target + "}")
     print("Loading models...")
-    init_models()
+    init_models(args.lang)
     print("Done loading")
     transform_from_file_to_file(args.source, args.target)
+    print("Skipped ", skipped_sentences, "sentences due to tokenizer ner and pos missalign")

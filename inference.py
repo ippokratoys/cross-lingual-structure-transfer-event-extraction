@@ -22,6 +22,7 @@ parser.add_argument('--dataset', type=str, default='test', help="Evaluate on dev
 parser.add_argument('--seed', type=int, default=1234)
 parser.add_argument('--cuda', type=bool, default=torch.cuda.is_available())
 parser.add_argument('--cpu', action='store_true')
+parser.add_argument('--lang', default="en")
 args = parser.parse_args()
 
 torch.manual_seed(args.seed)
@@ -48,7 +49,7 @@ assert opt['vocab_size'] == vocab.size, "Vocab size must match that in the saved
 text = input("Enter your value: ")
 # text = "Let's go to the mall. Today or tomorrow somithing good (or bad) will take place. Maybe not, we move on"
 write_file = opt['data_dir'] + '/{}.json'.format("temp")
-parse_single(text, write_file)
+parse_single(text, write_file, args.lang)
 
 # load data
 batch = DataLoader(write_file, opt['batch_size'], opt, vocab, evaluation=True)
