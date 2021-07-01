@@ -20,23 +20,30 @@ OBJ_NER_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'PERSON': 2, 'ORGANIZATION': 3, 'DA
                  'IDEOLOGY': 18}
 
 # update ids
-NER_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'O': 2, 'PERSON': 3, 'ORGANIZATION': 4, 'LOCATION': 5, 'DATE': 6, 'NUMBER': 7,
-             'MISC': 8, 'DURATION': 9, 'MONEY': 10, 'PERCENT': 11, 'ORDINAL': 12, 'TIME': 13, 'SET': 14}
+NER_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'B-GPE': 2, 'B-LOC': 3, 'O': 4, 'E-TIME': 5, 'E-DATE': 6, 'S-ORDINAL': 7,
+             'S-PRODUCT': 8, 'B-WORK_OF_ART': 9, 'E-EVENT': 10, 'B-DATE': 11, 'S-TIME': 12, 'S-WORK_OF_ART': 13,
+             'E-PRODUCT': 14, 'S-FAC': 15, 'B-TIME': 16, 'E-GPE': 17, 'B-MONEY': 18, 'E-CARDINAL': 19, 'I-FAC': 20,
+             'E-LAW': 21, 'E-WORK_OF_ART': 22, 'E-ORG': 23, 'E-MONEY': 24, 'E-PERCENT': 25, 'I-PERCENT': 26,
+             'S-LAW': 27, 'B-NORP': 28, 'I-WORK_OF_ART': 29, 'B-QUANTITY': 30, 'B-EVENT': 31, 'E-NORP': 32, 'B-ORG': 33,
+             'B-PERSON': 34, 'S-GPE': 35, 'I-PERSON': 36, 'B-PERCENT': 37, 'S-DATE': 38, 'S-ORG': 39, 'S-LANGUAGE': 40,
+             'I-PRODUCT': 41, 'E-LOC': 42, 'E-PERSON': 43, 'I-ORG': 44, 'S-PERSON': 45, 'S-NORP': 46, 'I-NORP': 47,
+             'S-EVENT': 48, 'I-LOC': 49, 'I-MONEY': 50, 'B-PRODUCT': 51, 'I-DATE': 52, 'E-FAC': 53, 'B-LAW': 54,
+             'B-FAC': 55, 'I-TIME': 56, 'S-LOC': 57, 'E-QUANTITY': 58, 'S-MONEY': 59, 'S-CARDINAL': 60, 'I-EVENT': 61,
+             'B-CARDINAL': 62, 'I-GPE': 63, 'I-QUANTITY': 64, 'I-CARDINAL': 65, 'S-QUANTITY': 66, 'I-LAW': 67}
 
 # update ids
-POS_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'NNP': 2, 'NN': 3, 'IN': 4, 'DT': 5, ',': 6, 'JJ': 7, 'NNS': 8, 'VBD': 9,
-             'CD': 10, 'CC': 11, '.': 12, 'RB': 13, 'VBN': 14, 'PRP': 15, 'TO': 16, 'VB': 17, 'VBG': 18, 'VBZ': 19,
-             'PRP$': 20, ':': 21, 'POS': 22, '\'\'': 23, '``': 24, '-RRB-': 25, '-LRB-': 26, 'VBP': 27, 'MD': 28,
-             'NNPS': 29, 'WP': 30, 'WDT': 31, 'WRB': 32, 'RP': 33, 'JJR': 34, 'JJS': 35, '$': 36, 'FW': 37, 'RBR': 38,
-             'SYM': 39, 'EX': 40, 'RBS': 41, 'WP$': 42, 'PDT': 43, 'LS': 44, 'UH': 45, '#': 46}
+POS_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'INTJ': 2, 'NUM': 3, 'NOUN': 4, 'PART': 5, 'VERB': 6, 'X': 7, 'ADJ': 8,
+             'ADV': 9, 'DET': 10, 'SYM': 11, 'PUNCT': 12, 'ADP': 13, 'PROPN': 14, 'CCONJ': 15, 'PRON': 16, 'SCONJ': 17,
+             'AUX': 18}
 
 # looks similar (needs update)
-DEPREL_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'punct': 2, 'compound': 3, 'case': 4, 'nmod': 5, 'det': 6, 'nsubj': 7,
-                'amod': 8, 'conj': 9, 'dobj': 10, 'ROOT': 11, 'cc': 12, 'nmod:poss': 13, 'mark': 14, 'advmod': 15,
-                'appos': 16, 'nummod': 17, 'dep': 18, 'ccomp': 19, 'aux': 20, 'advcl': 21, 'acl:relcl': 22, 'xcomp': 23,
-                'cop': 24, 'acl': 25, 'auxpass': 26, 'nsubjpass': 27, 'nmod:tmod': 28, 'neg': 29, 'compound:prt': 30,
-                'mwe': 31, 'parataxis': 32, 'root': 33, 'nmod:npmod': 34, 'expl': 35, 'csubj': 36, 'cc:preconj': 37,
-                'iobj': 38, 'det:predet': 39, 'discourse': 40, 'csubjpass': 41}
+DEPREL_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'expl': 2, 'acl': 3, 'obl': 4, 'obl:npmod': 5, 'obl:tmod': 6, 'vocative': 7,
+                'nsubj:pass': 8, 'ccomp': 9, 'goeswith': 10, 'amod': 11, 'det': 12, 'conj': 13, 'root': 14,
+                'nmod:tmod': 15, 'compound': 16, 'csubj': 17, 'nummod': 18, 'cc:preconj': 19, 'advcl': 20,
+                'aux:pass': 21, 'flat': 22, 'obj': 23, 'nmod:npmod': 24, 'mark': 25, 'cc': 26, 'xcomp': 27,
+                'parataxis': 28, 'nsubj': 29, 'appos': 30, 'advmod': 31, 'discourse': 32, 'punct': 33, 'list': 34,
+                'aux': 35, 'case': 36, 'det:predet': 37, 'iobj': 38, 'nmod:poss': 39, 'acl:relcl': 40, 'nmod': 41,
+                'fixed': 42, 'cop': 43, 'compound:prt': 44}
 
 NEGATIVE_LABEL = 'no_relation'
 
