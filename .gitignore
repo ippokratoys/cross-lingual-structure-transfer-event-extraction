@@ -135,7 +135,7 @@ dmypy.json
 # bin models
 cc.en.300.bin
 cc.en.300.bin.gz
-./data/parsed/
+data/parsed/
 dataset/vocab/*
 dataset/glove/*
 saved_models/*

@@ -16,6 +16,7 @@ e.g `python data-preprocessing/transform_data.py --source data/rams/dev.jsonline
 1. Pre-process rams 
 
 `python3 datapreprocessing/transform_data.py`
+
 2. Use dev.json both as test and train set
 
 `cp data/parsed/dev.json data/parsed/test.json; cp data/parsed/dev.json data/parsed/train.json`
