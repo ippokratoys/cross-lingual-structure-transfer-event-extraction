@@ -29,16 +29,23 @@ LANG_SPECIFIC_OPTIONS = {
     "en": {
         "model_ud_pipe": "./data/english-ewt-ud-2.5-191206.udpipe",
         "fasttext_lang": "en",
-        "fasttext_model": "cc.en.300.bin",
+        "fasttext_model": "cc.en.300.bin", # not used right now
         "stanza_download": "en",
         "stanza_pipeline": "en",
     },
     "fr": {
         "model_ud_pipe": "./data/french-gsd-ud-2.5-191206.udpipe",
         "fasttext_lang": "fr",
-        "fasttext_model": "cc.fr.300.bin",
+        "fasttext_model": "cc.fr.300.bin", # not used right now
         "stanza_download": "fr",
         "stanza_pipeline": "fr"
+    },
+    "de": {
+        "model_ud_pipe": "./data/german-gsd-ud-2.5-191206.udpipe",
+        "fasttext_lang": "de",
+        "fasttext_model": "cc.de.300.bin", # not used right now
+        "stanza_download": "de",
+        "stanza_pipeline": "de"
     }
 }
 
@@ -56,7 +63,7 @@ def init_models(lang="en"):
     # see {http://lindat.mff.cuni.cz/services/udpipe/} for different language models
     # see {https://universaldependencies.org/format.html}
     m = Model(options["model_ud_pipe"])
-    fasttext.util.download_model(options["fasttext_lang"], if_exists='ignore')  # English
+    # fasttext.util.download_model(options["fasttext_lang"], if_exists='ignore')  # English
     # see {https://fasttext.cc/docs/en/crawl-vectors.html} for multilingual word embeddings
     # ft = fasttext.load_model(options["fasttext_model"])
     stanza.download(options["stanza_download"])
@@ -92,18 +99,30 @@ def map_tokens(sentence):
 def get_event(events, sentence_start_index, sentence_end_index):
     """
     Returns whether a sentence given its start/end index contains an event.
-    If a event exists it returns the event as a string else NONE
+    If a event exists it returns the event as a string and it's relative to sentence start/end index else NONE
     """
     for event in events:
         event_start = event[0]
         event_end = event[1]
-        event = event[2][0][0]
+        event_label = event[2][0][0]
         if sentence_start_index <= event_start <= sentence_end_index:
-            return event
-        if sentence_start_index <= event_end <= sentence_end_index:
-            return event
+            return event_label, (event_start - sentence_start_index), (event_end - sentence_start_index)
 
-    return None
+    return None, None, None
+
+
+def get_argument(arguments, sentence_start_index, sentence_end_index):
+    """
+    Returns whether a sentence given its start/end index contains an argument.
+    If an argument exists it returns it's relative to sentence start/end index else NONE
+    """
+    for argument in arguments:
+        argument_start = argument[1][0]
+        argument_end = argument[1][1]
+        if sentence_start_index <= argument_start <= sentence_end_index:
+            return (argument_start - sentence_start_index), (argument_end - sentence_start_index)
+
+    return None, None
 
 
 def convert_line_to_target(line):
@@ -115,15 +134,16 @@ def convert_line_to_target(line):
     """
     data = json.loads(line)
     events = data['evt_triggers']
+    gold_evt_links = data['gold_evt_links']
     sentences = data['sentences']
     sentence_start_index = 0
     sentences_converted = []
-    for sentence_tokes in sentences:
-        sentence_end_index = sentence_start_index + len(sentence_tokes)
+    for sentence_tokens in sentences:
+        sentence_end_index = sentence_start_index + len(sentence_tokens) - 1
 
         entry = dict()
         entry['id'] = str(uuid.uuid4())
-        entry['sentence'] = " ".join(sentence_tokes)
+        entry['sentence'] = " ".join(sentence_tokens)
         tokens_with_data = map_tokens(entry['sentence'])
         entry['token_ud'] = list(map(lambda x: x['text'], tokens_with_data))
         # todo check if we can skip tokenization
@@ -141,66 +161,63 @@ def convert_line_to_target(line):
         if len(entry['token_ud']) != len(entry['token']):
             global skipped_sentences
             skipped_sentences += 1
+            sentence_start_index = sentence_end_index + 1
             continue
 
-        entry['obj_start'] = 0
-        entry['obj_end'] = 0
-        entry['obj_type'] = '<UNK>'
-        for i, pos in enumerate(entry['stanford_pos']):
-            # TODO: here probably we need extra info to define which verb to keep and not just the first one
-            if pos == 'VERB' and 'obj_start' not in entry.keys():
-                entry['obj_start'] = i
-                entry['obj_end'] = i
-                entry['obj_type'] = 'VERB'  # TBD
-            elif 'obj_start' in entry.keys():
-                if pos == 'VERB':
-                    continue
-                else:
-                    entry['obj_end'] = i - 1
-                    break
-
-        entry['subj_start'] = 0
-        entry['subj_end'] = 0
-        entry['subj_type'] = '<UNK>'
-        for i, pos in enumerate(entry['stanford_deprel']):
-            # TODO: here probably we need the subj of the verb we chose above
-            if pos == 'nsubj' and 'subj_start' not in entry.keys():
-                entry['subj_start'] = i
-                entry['subj_end'] = i
-                ners_for_entry = list(enumerate(entry['stanford_ner']))
-                entry['subj_type'] = ners_for_entry[i][1]
-            elif 'obj_start' in entry.keys():
-                if pos == 'nsubj':
-                    continue
-                else:
-                    entry['subj_end'] = i - 1
-                break
-            else:
-                continue
-
-        sentence_event = get_event(events, sentence_start_index, sentence_end_index)
+        sentence_event, sentence_event_start, sentence_event_stop = get_event(events, sentence_start_index, sentence_end_index)
         if sentence_event is None:
             entry['relation'] = 'no_relation'
+
+            entry['subj_start'] = -1
+            entry['subj_end'] = -1
+            entry['subj_type'] = ''
+
+            entry['obj_start'] = -1
+            entry['obj_end'] = -1
+            entry['obj_type'] = ''
         else:
             entry['relation'] = sentence_event
+            entry['subj_start'] = sentence_event_start
+            entry['subj_end'] = sentence_event_stop
+            entry['subj_type'] = entry['stanford_pos'][sentence_event_start]
 
-        sentence_start_index = sentence_end_index
+            sentence_argument_start, sentence_argument_stop = get_argument(gold_evt_links, sentence_start_index, sentence_end_index)
+
+            if sentence_argument_start is None:
+                entry['obj_start'] = -1
+                entry['obj_end'] = -1
+                entry['obj_type'] = ''
+            else:
+                entry['obj_start'] = sentence_argument_start
+                entry['obj_end'] = sentence_argument_stop
+                entry['obj_type'] = entry['stanford_ner'][sentence_event_start]
+
+        sentence_start_index = sentence_end_index + 1
         sentences_converted.append(entry)
     return sentences_converted
 
 
-def transform_from_file_to_file(source_file_path, target_file_path):
+def transform_from_file_to_file(source_file_path, target_file_path, target_file_for_translation_path):
     num_lines = sum(1 for _ in open(source_file_path, 'r'))
     with open(source_file_path, "r") as read_file:
         sentences = []
+        sentences_to_translate = []
         for line in tqdm(read_file, total=num_lines):
-            sentences.extend(convert_line_to_target(line))
+            converted_sentences = convert_line_to_target(line)
+            sentences.extend(converted_sentences)
+            sentences_to_translate.extend(converted_sentence['sentence'] for converted_sentence in converted_sentences)
 
         path = Path(target_file_path)
         path.parent.mkdir(parents=True, exist_ok=True)
-        print("Writing to file")
+        print("Writing to target file")
         with open(target_file_path, "w") as write_file:
             json.dump(sentences, write_file, separators=(',', ':'))
+
+        path_for_translation = Path(target_file_for_translation_path)
+        path_for_translation.parent.mkdir(parents=True, exist_ok=True)
+        print("Writing to target translation file")
+        with open(target_file_for_translation_path, "w") as write__translation_file:
+            json.dump(sentences_to_translate, write__translation_file, separators=(',', ':'))
 
 
 def convert_to_sentences_of_tokens(text):
@@ -238,11 +255,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--source', default="data/rams/dev.jsonlines")
     parser.add_argument('--target', default="data/parsed/dev.json")
+    parser.add_argument('--target_translation', default="data/parsed/dev_translation.json")
     parser.add_argument('--lang', default="en")
     args = parser.parse_args()
     print("Converting {" + args.source + "} to {" + args.target + "}")
     print("Loading models...")
     init_models(args.lang)
     print("Done loading")
-    transform_from_file_to_file(args.source, args.target)
+    transform_from_file_to_file(args.source, args.target, args.target_translation)
     print("Skipped ", skipped_sentences, "sentences due to tokenizer ner and pos missalign")
