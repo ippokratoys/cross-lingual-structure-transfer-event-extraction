@@ -168,11 +168,11 @@ def convert_line_to_target(line):
 
             entry['subj_start'] = -1
             entry['subj_end'] = -1
-            entry['subj_type'] = ''
+            entry['subj_type'] = '<UNK>'
 
             entry['obj_start'] = -1
             entry['obj_end'] = -1
-            entry['obj_type'] = ''
+            entry['obj_type'] = '<UNK>'
         else:
             entry['relation'] = sentence_event
             entry['subj_start'] = sentence_event_start
@@ -184,7 +184,7 @@ def convert_line_to_target(line):
             if sentence_argument_start is None:
                 entry['obj_start'] = -1
                 entry['obj_end'] = -1
-                entry['obj_type'] = ''
+                entry['obj_type'] = '<UNK>'
             else:
                 entry['obj_start'] = sentence_argument_start
                 entry['obj_end'] = sentence_argument_stop
