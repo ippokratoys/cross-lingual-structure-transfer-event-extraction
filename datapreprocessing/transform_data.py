@@ -156,7 +156,7 @@ def convert_line_to_target(line):
             entry['token'].append(token.text)
             entry['stanford_ner'].append(token.ner)
 
-        if len(entry['token_ud']) != len(entry['token']):
+        if len(entry['token_ud']) != len(entry['token']) or len(entry['token_ud']) != len(sentence_tokens):
             global skipped_sentences
             skipped_sentences += 1
             sentence_start_index = sentence_end_index + 1
