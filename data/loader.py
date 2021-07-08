@@ -63,12 +63,12 @@ class DataLoader(object):
             if d['obj_start'] != -1 and d['obj_end'] != -1:
                 obj_positions = get_positions(d['obj_start'], d['obj_end'], l)
             else:
-                obj_positions = []
+                obj_positions = get_positions(1, 1, l)
 
             if d['subj_start'] != -1 and d['subj_end'] != -1:
                 subj_positions = get_positions(d['subj_start'], d['subj_end'], l)
             else:
-                subj_positions = []
+                subj_positions = get_positions(1, 1, l)
 
             subj_type = [constant.SUBJ_NER_TO_ID[d['subj_type']]]
             obj_type = [constant.OBJ_NER_TO_ID[d['obj_type']]]

@@ -12,12 +12,24 @@ UNK_ID = 1
 VOCAB_PREFIX = [PAD_TOKEN, UNK_TOKEN]
 
 # hard-coded mappings from fields to ids
-SUBJ_NER_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'ORGANIZATION': 2, 'PERSON': 3}
+SUBJ_NER_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'INTJ': 2, 'NUM': 3, 'NOUN': 4, 'PART': 5, 'VERB': 6, 'X': 7, 'ADJ': 8,
+                  'ADV': 9, 'DET': 10, 'SYM': 11, 'PUNCT': 12, 'ADP': 13, 'PROPN': 14, 'CCONJ': 15, 'PRON': 16,
+                  'SCONJ': 17,
+                  'AUX': 18}
 
-OBJ_NER_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'PERSON': 2, 'ORGANIZATION': 3, 'DATE': 4, 'NUMBER': 5, 'TITLE': 6,
-                 'COUNTRY': 7, 'LOCATION': 8, 'CITY': 9, 'MISC': 10, 'STATE_OR_PROVINCE': 11, 'DURATION': 12,
-                 'NATIONALITY': 13, 'CAUSE_OF_DEATH': 14, 'CRIMINAL_CHARGE': 15, 'RELIGION': 16, 'URL': 17,
-                 'IDEOLOGY': 18}
+OBJ_NER_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'B-GPE': 2, 'B-LOC': 3, 'O': 4, 'E-TIME': 5, 'E-DATE': 6, 'S-ORDINAL': 7,
+                 'S-PRODUCT': 8, 'B-WORK_OF_ART': 9, 'E-EVENT': 10, 'B-DATE': 11, 'S-TIME': 12, 'S-WORK_OF_ART': 13,
+                 'E-PRODUCT': 14, 'S-FAC': 15, 'B-TIME': 16, 'E-GPE': 17, 'B-MONEY': 18, 'E-CARDINAL': 19, 'I-FAC': 20,
+                 'E-LAW': 21, 'E-WORK_OF_ART': 22, 'E-ORG': 23, 'E-MONEY': 24, 'E-PERCENT': 25, 'I-PERCENT': 26,
+                 'S-LAW': 27, 'B-NORP': 28, 'I-WORK_OF_ART': 29, 'B-QUANTITY': 30, 'B-EVENT': 31, 'E-NORP': 32,
+                 'B-ORG': 33,
+                 'B-PERSON': 34, 'S-GPE': 35, 'I-PERSON': 36, 'B-PERCENT': 37, 'S-DATE': 38, 'S-ORG': 39,
+                 'S-LANGUAGE': 40,
+                 'I-PRODUCT': 41, 'E-LOC': 42, 'E-PERSON': 43, 'I-ORG': 44, 'S-PERSON': 45, 'S-NORP': 46, 'I-NORP': 47,
+                 'S-EVENT': 48, 'I-LOC': 49, 'I-MONEY': 50, 'B-PRODUCT': 51, 'I-DATE': 52, 'E-FAC': 53, 'B-LAW': 54,
+                 'B-FAC': 55, 'I-TIME': 56, 'S-LOC': 57, 'E-QUANTITY': 58, 'S-MONEY': 59, 'S-CARDINAL': 60,
+                 'I-EVENT': 61,
+                 'B-CARDINAL': 62, 'I-GPE': 63, 'I-QUANTITY': 64, 'I-CARDINAL': 65, 'S-QUANTITY': 66, 'I-LAW': 67}
 
 # update ids
 NER_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'B-GPE': 2, 'B-LOC': 3, 'O': 4, 'E-TIME': 5, 'E-DATE': 6, 'S-ORDINAL': 7,
