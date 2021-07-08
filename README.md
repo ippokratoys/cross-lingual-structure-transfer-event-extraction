@@ -1,4 +1,5 @@
 # cross-lingual-structure-transfer-event-extraction
+
 Implementation of Cross-lingual Structure Transfer for Relation and Event Extraction
 
 ## Data pre-processing
@@ -6,14 +7,27 @@ Implementation of Cross-lingual Structure Transfer for Relation and Event Extrac
 In order to pre-process the data use the script given in `data-preprocessing/`.
 
 ### Convert Rams data
-In order to convert RAMS data use transform_data.py. It takes two arguments `--source` 
+
+In order to convert RAMS data use transform_data.py. It takes two arguments `--source`
 for defining the source file (see `data/rams`) and `--target` to define the output file
 
 e.g `python data-preprocessing/transform_data.py --source data/rams/dev.jsonlines --target data/parsed/dev.json`
 
+### Different language preprocessing
+
+1. Run`transform_data.py` for the English dataset
+2. Manually translate the `dev_translation.json`. Make sure not maintain the same order.
+3. Download https://fasttext.cc/docs/en/aligned-vectors.html
+4. Update `LANG_SPECIFIC_OPTIONS` with the correct path
+5. Run `convert_vec_to_bin.py`
+6. Run `allign_lang.py`
+
+This will produce a `dev_translation_de.json` which contains all the data from `dev.json` by using
+`dev_translation_de.json`.
 
 # Current commands to test the model
-1. Pre-process rams 
+
+1. Pre-process rams
 
 `python3 datapreprocessing/transform_data.py`
 
@@ -34,3 +48,4 @@ With prunning as gcn readme (not working)
 5. Inference
 
 `python3 inference.py saved_models/00 --dataset single --data_dir data/parsed`
+

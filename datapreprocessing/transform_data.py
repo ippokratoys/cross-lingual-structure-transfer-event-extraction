@@ -29,21 +29,21 @@ LANG_SPECIFIC_OPTIONS = {
     "en": {
         "model_ud_pipe": "./data/english-ewt-ud-2.5-191206.udpipe",
         "fasttext_lang": "en",
-        "fasttext_model": "cc.en.300.bin", # not used right now
+        "fasttext_model": "/media/thanasis/Elements/university/nlp/wiki.en.align.vec",
         "stanza_download": "en",
         "stanza_pipeline": "en",
     },
     "fr": {
         "model_ud_pipe": "./data/french-gsd-ud-2.5-191206.udpipe",
         "fasttext_lang": "fr",
-        "fasttext_model": "cc.fr.300.bin", # not used right now
+        "fasttext_model": "cc.fr.300.bin",  # not used right now
         "stanza_download": "fr",
         "stanza_pipeline": "fr"
     },
     "de": {
         "model_ud_pipe": "./data/german-gsd-ud-2.5-191206.udpipe",
         "fasttext_lang": "de",
-        "fasttext_model": "cc.de.300.bin", # not used right now
+        "fasttext_model": "/media/thanasis/Elements/university/nlp/wiki.de.align.vec",
         "stanza_download": "de",
         "stanza_pipeline": "de"
     }
@@ -63,9 +63,7 @@ def init_models(lang="en"):
     # see {http://lindat.mff.cuni.cz/services/udpipe/} for different language models
     # see {https://universaldependencies.org/format.html}
     m = Model(options["model_ud_pipe"])
-    # fasttext.util.download_model(options["fasttext_lang"], if_exists='ignore')  # English
-    # see {https://fasttext.cc/docs/en/crawl-vectors.html} for multilingual word embeddings
-    # ft = fasttext.load_model(options["fasttext_model"])
+
     stanza.download(options["stanza_download"])
     stanza_nlp = stanza.Pipeline(options["stanza_pipeline"], processors='tokenize,ner')
 
@@ -158,7 +156,7 @@ def convert_line_to_target(line):
             entry['token'].append(token.text)
             entry['stanford_ner'].append(token.ner)
 
-        if len(entry['token_ud']) != len(entry['token']):
+        if len(entry['token_ud']) != len(entry['token']) or len(entry['token_ud']) != len(sentence_tokens):
             global skipped_sentences
             skipped_sentences += 1
             sentence_start_index = sentence_end_index + 1
@@ -170,11 +168,11 @@ def convert_line_to_target(line):
 
             entry['subj_start'] = -1
             entry['subj_end'] = -1
-            entry['subj_type'] = ''
+            entry['subj_type'] = '<UNK>'
 
             entry['obj_start'] = -1
             entry['obj_end'] = -1
-            entry['obj_type'] = ''
+            entry['obj_type'] = '<UNK>'
         else:
             entry['relation'] = sentence_event
             entry['subj_start'] = sentence_event_start
@@ -186,7 +184,7 @@ def convert_line_to_target(line):
             if sentence_argument_start is None:
                 entry['obj_start'] = -1
                 entry['obj_end'] = -1
-                entry['obj_type'] = ''
+                entry['obj_type'] = '<UNK>'
             else:
                 entry['obj_start'] = sentence_argument_start
                 entry['obj_end'] = sentence_argument_stop
@@ -237,7 +235,8 @@ def parse_single(text, target_file_path, lang):
     line = """
     {{
       "sentences": {},
-      "evt_triggers": [] 
+      "evt_triggers": [],
+       "gold_evt_links": [] 
     }}
     """.format(json.dumps(sentences_of_tokens))
     sentences = convert_line_to_target(line)
@@ -247,6 +246,20 @@ def parse_single(text, target_file_path, lang):
     print("Writing to file")
     with open(target_file_path, "w") as write_file:
         json.dump(sentences, write_file, separators=(',', ':'))
+
+
+def parse_single_return(text):
+    sentences_of_tokens = convert_to_sentences_of_tokens(text)
+    line = """
+    {{
+      "sentences": {},
+      "evt_triggers": [] ,
+      "gold_evt_links": []
+    }}
+    """.format(json.dumps(sentences_of_tokens))
+    sentences = convert_line_to_target(line)
+
+    return sentences
 
 
 if __name__ == '__main__':

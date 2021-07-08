@@ -49,8 +49,10 @@ class DataLoader(object):
             # anonymize tokens
             ss, se = d['subj_start'], d['subj_end']
             os, oe = d['obj_start'], d['obj_end']
-            tokens[ss:se+1] = ['SUBJ-'+d['subj_type']] * (se-ss+1)
-            tokens[os:oe+1] = ['OBJ-'+d['obj_type']] * (oe-os+1)
+            if ss != -1 and se != -1:
+                tokens[ss:se + 1] = ['SUBJ-' + d['subj_type']] * (se - ss + 1)
+            if os != -1 and oe != -1:
+                tokens[os:oe + 1] = ['OBJ-' + d['obj_type']] * (oe - os + 1)
             tokens = map_to_ids(tokens, vocab.word2id)
             pos = map_to_ids(d['stanford_pos'], constant.POS_TO_ID)
             ner = map_to_ids(d['stanford_ner'], constant.NER_TO_ID)
@@ -58,8 +60,16 @@ class DataLoader(object):
             head = [int(x) for x in d['stanford_head']]
             assert any([x == 0 for x in head])
             l = len(tokens)
-            subj_positions = get_positions(d['subj_start'], d['subj_end'], l)
-            obj_positions = get_positions(d['obj_start'], d['obj_end'], l)
+            if d['obj_start'] != -1 and d['obj_end'] != -1:
+                obj_positions = get_positions(d['obj_start'], d['obj_end'], l)
+            else:
+                obj_positions = []
+
+            if d['subj_start'] != -1 and d['subj_end'] != -1:
+                subj_positions = get_positions(d['subj_start'], d['subj_end'], l)
+            else:
+                subj_positions = []
+
             subj_type = [constant.SUBJ_NER_TO_ID[d['subj_type']]]
             obj_type = [constant.OBJ_NER_TO_ID[d['obj_type']]]
             relation = self.label2id[d['relation']]

@@ -78,9 +78,12 @@ def load_tokens(filename):
         for d in data:
             ts = d['token']
             ss, se, os, oe = d['subj_start'], d['subj_end'], d['obj_start'], d['obj_end']
+            # if this doesn't work, reverse if statement and change to continue
+            if ss != -1  and se != -1 and os == -1 and oe != -1:
+                ts[ss:se + 1] = ['<PAD>'] * (se - ss + 1)
+                ts[os:oe + 1] = ['<PAD>'] * (oe - os + 1)
+
             # do not create vocab for entity words
-            ts[ss:se+1] = ['<PAD>']*(se-ss+1)
-            ts[os:oe+1] = ['<PAD>']*(oe-os+1)
             tokens += list(filter(lambda t: t!='<PAD>', ts))
     print("{} tokens from {} examples loaded from {}.".format(len(tokens), len(data), filename))
     return tokens
