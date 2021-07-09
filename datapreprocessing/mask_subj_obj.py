@@ -13,8 +13,6 @@ def mask_objects(source_file_path):
     with open(source_file_path) as infile:
         target_lang_sentences = json.load(infile)
 
-    original_events_set = set()
-    updated_events_set = set()
     updated = []
     print("Converting classes...")
     for sentence in target_lang_sentences:
@@ -26,23 +24,16 @@ def mask_objects(source_file_path):
         updated_sentence['obj_end'] = 0
         updated_sentence['obj_type'] = sentence["stanford_ner"][0]
 
-        last_token = len(updated_sentence['tokens']) - 1
+        last_token = len(updated_sentence['token']) - 1
         updated_sentence['subj_start'] = last_token
         updated_sentence['subj_end'] = last_token
         updated_sentence['subj_type'] = sentence["stanford_pos"][last_token]
 
-        original_events_set.add(original_event)
-        updated_events_set.add(updated_event)
         updated.append(updated_sentence)
 
     print("Updating file...")
     with open(source_file_path, "w") as write_file:
         json.dump(updated, write_file, separators=(',', ':'))
-
-    print("--- Original ---\n", original_events_set)
-    print("--- Updated  ---\n", updated_events_set)
-    print("Events reduced from size", len(original_events_set), "to", len(updated_events_set))
-    print("Don't forget to update constant.py. You can use helper.py.")
 
 
 if __name__ == '__main__':
