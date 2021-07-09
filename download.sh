@@ -1,0 +1,2 @@
+wget -O dataset/glove/wiki.en.align.vec https://dl.fbaipublicfiles.com/fasttext/vectors-aligned/wiki.en.align.vec
+wget -O dataset/glove/wiki.de.align.vec https://dl.fbaipublicfiles.com/fasttext/vectors-aligned/wiki.de.align.vec
