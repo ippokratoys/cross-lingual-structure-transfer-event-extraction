@@ -1,11 +1,6 @@
 import argparse
 import json
-
-
-def convert_to_simple_event(original_event):
-    if "." in original_event:
-        return original_event.split(".")[0]
-    return original_event
+import random
 
 
 def mask_objects(source_file_path):
@@ -16,19 +11,28 @@ def mask_objects(source_file_path):
     updated = []
     print("Converting classes...")
     for sentence in target_lang_sentences:
-        original_event = sentence['relation']
-        updated_event = convert_to_simple_event(original_event)
 
         updated_sentence = sentence
-        updated_sentence['obj_start'] = 0
-        updated_sentence['obj_end'] = 0
-        updated_sentence['obj_type'] = sentence["stanford_ner"][0]
 
-        last_token = len(updated_sentence['token']) - 1
-        updated_sentence['subj_start'] = last_token
-        updated_sentence['subj_end'] = last_token
-        updated_sentence['subj_type'] = sentence["stanford_pos"][last_token]
+        if sentence['relation'] != 'no_relation':
+            updated.append(updated_sentence)
+            continue
 
+        obj_start = random.randint(0, len(sentence['token']) - 1)
+
+        updated_sentence['obj_start'] = obj_start
+        updated_sentence['obj_end'] = obj_start
+        updated_sentence['obj_type'] = sentence["stanford_ner"][obj_start]
+
+        subj_start = random.randint(0, len(sentence['token']) - 1)
+        for i in range(100):
+            if subj_start != obj_start:
+                break
+            subj_start = random.randint(0, len(sentence['token']) - 1)
+
+        updated_sentence['subj_start'] = subj_start
+        updated_sentence['subj_end'] = subj_start
+        updated_sentence['subj_type'] = sentence["stanford_pos"][subj_start]
         updated.append(updated_sentence)
 
     print("Updating file...")
