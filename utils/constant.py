@@ -29,7 +29,9 @@ OBJ_NER_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'B-GPE': 2, 'B-LOC': 3, 'O': 4, 'E-
                  'S-EVENT': 48, 'I-LOC': 49, 'I-MONEY': 50, 'B-PRODUCT': 51, 'I-DATE': 52, 'E-FAC': 53, 'B-LAW': 54,
                  'B-FAC': 55, 'I-TIME': 56, 'S-LOC': 57, 'E-QUANTITY': 58, 'S-MONEY': 59, 'S-CARDINAL': 60,
                  'I-EVENT': 61,
-                 'B-CARDINAL': 62, 'I-GPE': 63, 'I-QUANTITY': 64, 'I-CARDINAL': 65, 'S-QUANTITY': 66, 'I-LAW': 67}
+                 'B-CARDINAL': 62, 'I-GPE': 63, 'I-QUANTITY': 64, 'I-CARDINAL': 65, 'S-QUANTITY': 66, 'I-LAW': 67,
+                 'S-MISC': 68, 'I-MISC': 69, 'B-MISC': 70, 'E-MISC': 70,
+                 'B-PER': 34, 'I-PER': 36, 'E-PER': 43, 'S-PER': 45}
 
 # update ids
 NER_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'B-GPE': 2, 'B-LOC': 3, 'O': 4, 'E-TIME': 5, 'E-DATE': 6, 'S-ORDINAL': 7,
@@ -41,7 +43,9 @@ NER_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'B-GPE': 2, 'B-LOC': 3, 'O': 4, 'E-TIME
              'I-PRODUCT': 41, 'E-LOC': 42, 'E-PERSON': 43, 'I-ORG': 44, 'S-PERSON': 45, 'S-NORP': 46, 'I-NORP': 47,
              'S-EVENT': 48, 'I-LOC': 49, 'I-MONEY': 50, 'B-PRODUCT': 51, 'I-DATE': 52, 'E-FAC': 53, 'B-LAW': 54,
              'B-FAC': 55, 'I-TIME': 56, 'S-LOC': 57, 'E-QUANTITY': 58, 'S-MONEY': 59, 'S-CARDINAL': 60, 'I-EVENT': 61,
-             'B-CARDINAL': 62, 'I-GPE': 63, 'I-QUANTITY': 64, 'I-CARDINAL': 65, 'S-QUANTITY': 66, 'I-LAW': 67}
+             'B-CARDINAL': 62, 'I-GPE': 63, 'I-QUANTITY': 64, 'I-CARDINAL': 65, 'S-QUANTITY': 66, 'I-LAW': 67,
+             'S-MISC': 68, 'I-MISC': 69, 'B-MISC': 70, 'E-MISC': 70,
+             'B-PER': 34, 'I-PER': 36, 'E-PER': 43, 'S-PER': 45}
 
 # update ids
 POS_TO_ID = {PAD_TOKEN: 0, UNK_TOKEN: 1, 'INTJ': 2, 'NUM': 3, 'NOUN': 4, 'PART': 5, 'VERB': 6, 'X': 7, 'ADJ': 8,
