@@ -16,6 +16,8 @@ parser.add_argument('model_dir', type=str, help='Directory of the model.')
 parser.add_argument('--model', type=str, default='best_model.pt', help='Name of the model file.')
 parser.add_argument('--data_dir', type=str, default='dataset/tacred')
 parser.add_argument('--dataset', type=str, default='test', help="Evaluate on dev or test.")
+parser.add_argument('--vocab_file', type=str, default='',
+                    help="The vocab file depending on the language dataset language (the result of prepare_vocab)")
 
 parser.add_argument('--seed', type=int, default=1234)
 parser.add_argument('--cuda', type=bool, default=torch.cuda.is_available())
@@ -37,7 +39,12 @@ trainer = GCNTrainer(opt)
 trainer.load(model_file)
 
 # load vocab
-vocab_file = args.model_dir + '/vocab.pkl'
+if args.vocab_file:
+    vocab_file = args.vocab_file
+else:
+    vocab_file = args.model_dir + '/vocab.pkl'
+
+print(vocab_file)
 vocab = Vocab(vocab_file, load=True)
 assert opt['vocab_size'] == vocab.size, "Vocab size must match that in the saved model."
 
