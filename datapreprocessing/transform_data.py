@@ -17,6 +17,7 @@ file will have the following format
 """
 import argparse
 import json
+import random
 import uuid
 from pathlib import Path
 
@@ -163,29 +164,41 @@ def convert_line_to_target(line):
             sentence_start_index = sentence_end_index + 1
             continue
 
-        sentence_event, sentence_event_start, sentence_event_stop = get_event(events, sentence_start_index, sentence_end_index)
+        sentence_event, sentence_event_start, sentence_event_stop = get_event(events, sentence_start_index,
+                                                                              sentence_end_index)
         if sentence_event is None:
             entry['relation'] = 'no_relation'
 
-            entry['subj_start'] = -1
-            entry['subj_end'] = -1
-            entry['subj_type'] = '<UNK>'
+            subj_start = random.randint(0, len(entry['token']) - 1)
 
-            entry['obj_start'] = -1
-            entry['obj_end'] = -1
-            entry['obj_type'] = '<UNK>'
+            entry['subj_start'] = subj_start
+            entry['subj_end'] = subj_start
+            entry['subj_type'] = entry["stanford_pos"][subj_start]
+
+            obj_start = random.randint(0, len(entry['token']) - 1)
+            for i in range(100):
+                if subj_start != obj_start:
+                    break
+                obj_start = random.randint(0, len(entry['token']) - 1)
+
+            entry['obj_start'] = obj_start
+            entry['obj_end'] = obj_start
+            entry['obj_type'] = entry["stanford_ner"][obj_start]
         else:
             entry['relation'] = sentence_event
             entry['subj_start'] = sentence_event_start
             entry['subj_end'] = sentence_event_stop
             entry['subj_type'] = entry['stanford_pos'][sentence_event_start]
 
-            sentence_argument_start, sentence_argument_stop = get_argument(gold_evt_links, sentence_start_index, sentence_end_index)
+            sentence_argument_start, sentence_argument_stop = get_argument(gold_evt_links, sentence_start_index,
+                                                                           sentence_end_index)
 
             if sentence_argument_start is None:
-                entry['obj_start'] = -1
-                entry['obj_end'] = -1
-                entry['obj_type'] = '<UNK>'
+                obj_start = random.randint(0, len(entry['token']) - 1)
+
+                entry['obj_start'] = obj_start
+                entry['obj_end'] = obj_start
+                entry['obj_type'] = entry["stanford_ner"][obj_start]
             else:
                 entry['obj_start'] = sentence_argument_start
                 entry['obj_end'] = sentence_argument_stop
@@ -237,16 +250,31 @@ def parse_single(text, target_file_path, lang):
     {{
       "sentences": {},
       "evt_triggers": [],
-       "gold_evt_links": [] 
+      "gold_evt_links": [] 
     }}
     """.format(json.dumps(sentences_of_tokens))
     sentences = convert_line_to_target(line)
+    sentences_all_possible = []
+    for sentence in sentences:
+        for i in range(len(sentence['token'])):
+            for j in range(len(sentence['token'])):
+                if i == j:
+                    continue
+                new_sentence = sentence.copy()
+                new_sentence['obj_start'] = i
+                new_sentence['obj_end'] = i
+                new_sentence['obj_type'] = sentence["stanford_ner"][i]
 
+                new_sentence['subj_start'] = j
+                new_sentence['subj_end'] = j
+                new_sentence['subj_type'] = sentence['stanford_pos'][j]
+
+                sentences_all_possible.append(new_sentence)
     path = Path(target_file_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     print("Writing to file")
     with open(target_file_path, "w") as write_file:
-        json.dump(sentences, write_file, separators=(',', ':'))
+        json.dump(sentences_all_possible, write_file, separators=(',', ':'))
 
 
 def parse_single_return(text):
