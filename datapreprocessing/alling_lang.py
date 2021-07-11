@@ -35,7 +35,7 @@ def get_vector_en(word):
     try:
         return key_vectors_en[word.lower()]
     except Exception as e:
-        return [0] * 300
+        return numpy.zeros(300,)
 
 
 def get_vector_lang(word):
@@ -43,7 +43,7 @@ def get_vector_lang(word):
     try:
         return key_vectors_lang[word.lower()]
     except Exception as e:
-        return [0] * 300
+        return numpy.zeros(300,)
 
 
 def find_index_of_word_vector(index, source_parsed, target_parsed):
@@ -103,21 +103,23 @@ def find_index_of_word_vector(index, source_parsed, target_parsed):
 
 
 def align_languages(source_lang_filename, target_lang_sentences_filename, out_lang_filename):
-    global skipped_sentences
-    with open(source_lang_filename) as infile:
+    # global skipped_sentences
+    with open(source_lang_filename, encoding='utf8') as infile:
         source_lang_data = json.load(infile)
 
-    with open(target_lang_sentences_filename) as infile:
+    with open(target_lang_sentences_filename, encoding='utf8') as infile:
         target_lang_sentences = json.load(infile)
 
     target_list = []
     for i, _ in enumerate(source_lang_data):
         source_lang = source_lang_data[i]
-        target_lang_sentence = target_lang_sentences[i]
+        target_lang_sentence_unstripped = target_lang_sentences[str(i)]
+        target_lang_sentence = target_lang_sentence_unstripped.strip()
         target_parsed = parse_single_return(target_lang_sentence)
 
-        if len(target_parsed) > 1:
-            skipped_sentences += 1
+        if len(target_parsed) > 1 or len(target_parsed) == 0:
+            # skipped_sentences += 1
+            print(target_lang_sentence)
             print("Maps to more than one sentence. SKIPPING sentence...")
             continue
 
@@ -129,13 +131,13 @@ def align_languages(source_lang_filename, target_lang_sentences_filename, out_la
             index = find_index_of_word_vector(source_lang['subj_start'], source_lang, target_parsed)
             target_parsed['subj_start'] = index
             target_parsed['subj_end'] = index
-            target_parsed['subj_type'] = source_lang['subj_type']
+            target_parsed['subj_type'] = target_parsed['stanford_pos'][index]
 
         if source_lang['obj_start'] != -1:
             index = find_index_of_word_vector(source_lang['obj_start'], source_lang, target_parsed)
             target_parsed['obj_start'] = index
             target_parsed['obj_end'] = index
-            target_parsed['obj_type'] = source_lang['obj_type']
+            target_parsed['obj_type'] = target_parsed['stanford_ner'][index]
 
         target_list.append(target_parsed)
 
@@ -144,8 +146,8 @@ def align_languages(source_lang_filename, target_lang_sentences_filename, out_la
 
 
 if __name__ == '__main__':
-    global skipped_sentences
-    skipped_sentences = 0
+    # global skipped_sentences
+    # skipped_sentences = 0
     parser = argparse.ArgumentParser()
     parser.add_argument('--source_english', default="data/parsed/dev.json")
     parser.add_argument('--source_target', default="data/parsed/dev_translation_de.json")
@@ -161,4 +163,4 @@ if __name__ == '__main__':
     init_vectors(args.lang)
     print("Done loading")
     align_languages(args.source_english, args.source_target, args.out_target)
-    print("Skipped ", skipped_sentences, "sentences due to tokenizer ner and pos missalign")
+    # print("Skipped ", skipped_sentences, "sentences due to tokenizer ner and pos missalign")

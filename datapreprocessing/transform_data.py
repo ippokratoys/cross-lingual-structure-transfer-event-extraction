@@ -29,21 +29,22 @@ LANG_SPECIFIC_OPTIONS = {
     "en": {
         "model_ud_pipe": "./data/english-ewt-ud-2.5-191206.udpipe",
         "fasttext_lang": "en",
-        "fasttext_model": "/media/thanasis/Elements/university/nlp/wiki.en.align.vec",
+        "fasttext_model": "./dataset/fasttext/wiki.en.align.vec",
         "stanza_download": "en",
         "stanza_pipeline": "en",
     },
+    # not used right now
     "fr": {
         "model_ud_pipe": "./data/french-gsd-ud-2.5-191206.udpipe",
         "fasttext_lang": "fr",
-        "fasttext_model": "cc.fr.300.bin",  # not used right now
+        "fasttext_model": "cc.fr.300.bin",
         "stanza_download": "fr",
         "stanza_pipeline": "fr"
     },
     "de": {
         "model_ud_pipe": "./data/german-gsd-ud-2.5-191206.udpipe",
         "fasttext_lang": "de",
-        "fasttext_model": "/media/thanasis/Elements/university/nlp/wiki.de.align.vec",
+        "fasttext_model": "./dataset/fasttext/wiki.de.align.vec",
         "stanza_download": "de",
         "stanza_pipeline": "de"
     }
@@ -157,8 +158,8 @@ def convert_line_to_target(line):
             entry['stanford_ner'].append(token.ner)
 
         if len(entry['token_ud']) != len(entry['token']) or len(entry['token_ud']) != len(sentence_tokens):
-            global skipped_sentences
-            skipped_sentences += 1
+            # global skipped_sentences
+            # skipped_sentences += 1
             sentence_start_index = sentence_end_index + 1
             continue
 
@@ -263,8 +264,8 @@ def parse_single_return(text):
 
 
 if __name__ == '__main__':
-    global skipped_sentences
-    skipped_sentences = 0
+    # global skipped_sentences
+    # skipped_sentences = 0
     parser = argparse.ArgumentParser()
     parser.add_argument('--source', default="data/rams/dev.jsonlines")
     parser.add_argument('--target', default="data/parsed/dev.json")
@@ -276,4 +277,4 @@ if __name__ == '__main__':
     init_models(args.lang)
     print("Done loading")
     transform_from_file_to_file(args.source, args.target, args.target_translation)
-    print("Skipped ", skipped_sentences, "sentences due to tokenizer ner and pos missalign")
+    # print("Skipped ", skipped_sentences, "sentences due to tokenizer ner and pos missalign")
