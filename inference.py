@@ -52,9 +52,7 @@ vocab = Vocab(vocab_file, load=True)
 
 # write data to temp file in order to avoid re-writing
 
-# text = input("Enter your value: ")
-# text = "George killed Mike at school!"
-text = "Michael heeft George op school vermoord"
+text = input("Enter your value: ")
 write_file = opt['data_dir'] + '/{}.json'.format("temp")
 parse_single(text, write_file, args.lang)
 

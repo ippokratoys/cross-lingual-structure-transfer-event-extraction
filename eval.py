@@ -46,16 +46,19 @@ else:
 
 print(vocab_file)
 vocab = Vocab(vocab_file, load=True)
-assert opt['vocab_size'] == vocab.size, "Vocab size must match that in the saved model."
+# skipped due to different language
+# assert opt['vocab_size'] == vocab.size, "Vocab size must match that in the saved model."
 
 # load data
+# opt['data_dir'] = args.data_dir
+# opt['dataset'] = args.dataset
 data_file = opt['data_dir'] + '/{}.json'.format(args.dataset)
 print("Loading data from {} with batch size {}...".format(data_file, opt['batch_size']))
 batch = DataLoader(data_file, opt['batch_size'], opt, vocab, evaluation=True)
 
 helper.print_config(opt)
 label2id = constant.LABEL_TO_ID
-id2label = dict([(v,k) for k,v in label2id.items()])
+id2label = dict([(v, k) for k, v in label2id.items()])
 
 predictions = []
 all_probs = []
@@ -67,7 +70,6 @@ for i, b in enumerate(batch_iter):
 
 predictions = [id2label[p] for p in predictions]
 p, r, f1 = scorer.score(batch.gold(), predictions, verbose=True)
-print("{} set evaluate result: {:.2f}\t{:.2f}\t{:.2f}".format(args.dataset,p,r,f1))
+print("{} set evaluate result: {:.2f}\t{:.2f}\t{:.2f}".format(args.dataset, p, r, f1))
 
 print("Evaluation ended.")
-
