@@ -4,7 +4,9 @@ Run inference with saved models.
 import argparse
 import random
 
+import numpy as np
 import torch
+from torch import nn
 from tqdm import tqdm
 
 from data.loader import DataLoader
@@ -38,20 +40,34 @@ elif args.cuda:
 model_file = args.model_dir + '/' + args.model
 print("Loading model from {}".format(model_file))
 opt = torch_utils.load_config(model_file)
-trainer = GCNTrainer(opt)
-trainer.load(model_file)
 
 # load vocab
 if args.vocab_file:
-    vocab_file = args.vocab_file
+    opt['vocab_dir'] = args.vocab_file
+    vocab_file = args.vocab_file + '/vocab.pkl'
 else:
     vocab_file = args.model_dir + '/vocab.pkl'
 
+trainer = GCNTrainer(opt)
+trainer.load(model_file)
+
+print(vocab_file)
 vocab = Vocab(vocab_file, load=True)
+# skipped due to different language
 # assert opt['vocab_size'] == vocab.size, "Vocab size must match that in the saved model."
 
-# write data to temp file in order to avoid re-writing
+# Update gcn vocab embeddings for the target language
+target_lang_emb = nn.Embedding(vocab.size, opt['emb_dim'], padding_idx=constant.PAD_ID)
+emb_file = opt['vocab_dir'] + '/embedding.npy'
+emb_matrix = np.load(emb_file)
+emb_matrix = torch.from_numpy(emb_matrix)
+target_lang_emb.weight.data.copy_(emb_matrix)
+if args.cuda:
+    target_lang_emb = target_lang_emb.cuda()
+trainer.model.gcn_model.gcn.emb = target_lang_emb
 
+
+# write data to temp file
 text = input("Enter your value: ")
 write_file = opt['data_dir'] + '/{}.json'.format("temp")
 parse_single(text, write_file, args.lang)

@@ -3,6 +3,9 @@ Run evaluation with saved models.
 """
 import random
 import argparse
+
+import numpy as np
+from torch import nn
 from tqdm import tqdm
 import torch
 
@@ -35,23 +38,35 @@ elif args.cuda:
 model_file = args.model_dir + '/' + args.model
 print("Loading model from {}".format(model_file))
 opt = torch_utils.load_config(model_file)
-trainer = GCNTrainer(opt)
-trainer.load(model_file)
 
 # load vocab
 if args.vocab_file:
-    vocab_file = args.vocab_file
+    opt['vocab_dir'] = args.vocab_file
+    vocab_file = args.vocab_file + '/vocab.pkl'
 else:
     vocab_file = args.model_dir + '/vocab.pkl'
+
+trainer = GCNTrainer(opt)
+trainer.load(model_file)
 
 print(vocab_file)
 vocab = Vocab(vocab_file, load=True)
 # skipped due to different language
 # assert opt['vocab_size'] == vocab.size, "Vocab size must match that in the saved model."
 
+# Update gcn vocab embeddings for the target language
+target_lang_emb = nn.Embedding(vocab.size, opt['emb_dim'], padding_idx=constant.PAD_ID)
+emb_file = opt['vocab_dir'] + '/embedding.npy'
+emb_matrix = np.load(emb_file)
+emb_matrix = torch.from_numpy(emb_matrix)
+target_lang_emb.weight.data.copy_(emb_matrix)
+if args.cuda:
+    target_lang_emb = target_lang_emb.cuda()
+trainer.model.gcn_model.gcn.emb = target_lang_emb
+
 # load data
-# opt['data_dir'] = args.data_dir
-# opt['dataset'] = args.dataset
+opt['data_dir'] = args.data_dir
+opt['dataset'] = args.dataset
 data_file = opt['data_dir'] + '/{}.json'.format(args.dataset)
 print("Loading data from {} with batch size {}...".format(data_file, opt['batch_size']))
 batch = DataLoader(data_file, opt['batch_size'], opt, vocab, evaluation=True)
@@ -65,6 +80,18 @@ all_probs = []
 batch_iter = tqdm(batch)
 for i, b in enumerate(batch_iter):
     preds, probs, _ = trainer.predict(b)
+    # uncoment if you want to see examples
+    # for j, pred in enumerate(preds):
+    #     if pred != 0:
+    #         print("----------")
+    #         index = batch.batch_size * i + j
+    #         raw_data = batch.raw_data[index]
+    #         print(index)
+    #         print("Returned: ", id2label[pred])
+    #         print("Expected: ", raw_data['relation'])
+    #         print(raw_data['sentence'])
+    #         print(raw_data['id'])
+    #         print("----------")
     predictions += preds
     all_probs += probs
 

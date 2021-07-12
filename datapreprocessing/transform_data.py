@@ -21,7 +21,6 @@ import random
 import uuid
 from pathlib import Path
 
-import fasttext.util
 import stanza
 from corpy.udpipe import Model
 from tqdm import tqdm
