@@ -102,8 +102,23 @@ for i, b in enumerate(batch_iter):
     predictions += preds
     all_probs += probs
 
+final_results = []
+ids = [result.id for result in results]
+for id in ids:
+    events_for_id = [result.event for result in results if result.id == id]
+    if events_for_id.count('no_relation') == len(events_for_id):
+        final_results.append({
+            "id": id,
+            "event": "no_event"
+        })
+    else:
+        final_results.append({
+            "id": id,
+            "event": max(events_for_id, key=events_for_id.count)
+        })
+
 with open(args.results, "w") as write_file:
-    json.dump(results, write_file, separators=(',', ':'))
+    json.dump(final_results, write_file, separators=(',', ':'))
 
 predictions = [id2label[p] for p in predictions]
 p, r, f1 = scorer.score(batch.gold(), predictions, verbose=True)
